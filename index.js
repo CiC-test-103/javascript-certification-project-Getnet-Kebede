@@ -2,7 +2,7 @@
 const { LinkedList } = require("./LinkedList");
 const { Student } = require('./Student')
 const readline = require('readline');
-
+const fs = require("fs");
 // Initialize terminal interface
 const rl = readline.createInterface({
   input: process.stdin,
@@ -14,7 +14,14 @@ const rl = readline.createInterface({
  * studentManagementSystem is the object that the main() function will be modifying
  */
 const studentManagementSystem = new LinkedList();
-
+// Load data.json automatically when the program starts
+const defaultDataFile = "data.json";
+if (fs.existsSync(defaultDataFile)) {
+  studentManagementSystem.loadFromJSON(defaultDataFile);
+  console.log(`✅ Automatically loaded student data from ${defaultDataFile}`);
+} else {
+  console.log("⚠️ Warning: data.json not found. Starting with an empty student list.");
+}
 // Display available commands
 function main() {
   console.log(`
@@ -47,7 +54,14 @@ async function handleCommand(command) {
         console.log('Adding student...')
         const [name, year, email, specialization] = args
         // --------> WRITE YOUR CODE BELOW
-
+        if (!name || !year || !email || !specialization) {
+          console.log("Invalid input. Usage: add [name] [year] [email] [specialization]");
+          break;
+        }
+        studentManagementSystem.addStudent(
+          new Student(name, parseInt(year), email, specialization)
+        );
+        console.log("Student added successfully.");
         // --------> WRITE YOUR CODE ABOVE
         break;
 
@@ -62,7 +76,9 @@ async function handleCommand(command) {
        */
       console.log('Removing student...')
       // --------> WRITE YOUR CODE BELOW
-      
+      const [removeEmail] = args;
+      studentManagementSystem.removeStudent(removeEmail);
+      console.log("Student removed successfully.");
       // --------> WRITE YOUR CODE ABOVE
       break;
 
@@ -75,7 +91,7 @@ async function handleCommand(command) {
        */
       console.log('Displaying students...')
       // --------> WRITE YOUR CODE BELOW
-
+      console.log(studentManagementSystem.displayStudents());
       // --------> WRITE YOUR CODE ABOVE
       break;
 
@@ -91,7 +107,16 @@ async function handleCommand(command) {
        */
       console.log('Finding student...')
       // --------> WRITE YOUR CODE BELOW
-      
+      const [findEmail] = args;
+  
+      // Ensure email is trimmed and case-matching
+      const student = studentManagementSystem.findStudent(findEmail.trim().toLowerCase());
+    
+      if (student !== -1) {
+        console.log(student.getString());
+      } else {
+        console.log("Student does not exist.");
+      }
       // --------> WRITE YOUR CODE ABOVE
       break;
 
@@ -106,7 +131,14 @@ async function handleCommand(command) {
        */
       console.log('Saving data...')
       // --------> WRITE YOUR CODE BELOW
-
+      const [saveFileName] = args;
+      if (!saveFileName) {
+        console.log("Invalid input. Usage: save [fileName]");
+        break;
+      }
+      studentManagementSystem.saveToJson(saveFileName);
+      console.log("Data saved successfully.");
+      break;
       // --------> WRITE YOUR CODE ABOVE
 
     case "load":
@@ -120,7 +152,13 @@ async function handleCommand(command) {
        */
       console.log('Loading data...')
       // --------> WRITE YOUR CODE BELOW
-
+      const [loadFileName] = args;
+      if (!loadFileName) {
+        console.log("Invalid input. Usage: load [fileName]");
+        break;
+      }
+      studentManagementSystem.loadFromJSON(loadFileName);
+      console.log("Data loaded successfully."); 
       // --------> WRITE YOUR CODE ABOVE
       break;
 
@@ -134,7 +172,8 @@ async function handleCommand(command) {
        */
       console.log('Clearing data...')
       // --------> WRITE YOUR CODE BELOW
-
+      studentManagementSystem.clearStudents();
+      console.log("All students removed successfully.");
       // --------> WRITE YOUR CODE ABOVE
       break;
 
